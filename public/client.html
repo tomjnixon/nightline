@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<title>Client</title>
+
+		<script src="socket.io/socket.io.js"></script> 
+		<script src="prototype.js"></script> 
+		<script src="im_pane.js"></script> 
+		<script> 
+			document.observe("dom:loaded", function() {
+				
+				var socket = io.connect();
+				socket.on('connect', function() {
+					socket.on("connected", function() {
+						var im = new ImPane($("container"), {
+							msg_callback: function(msg) {
+								socket.emit("msg", msg);
+							}
+						});
+						
+						socket.on("msg", function(msg) {
+							im.add_msg(msg);
+						});
+					});
+					
+					socket.emit('connect_user');
+				});
+				
+			});
+		</script> 
+	</head>
+	<body>
+		<div id="container"> </div>
+	</body>
+</html>

@@ -1,0 +1,54 @@
+<html>
+	<head>
+		<title>Client</title>
+
+		<script src="socket.io/socket.io.js"></script> 
+		<script src="prototype.js"></script> 
+		<script src="im_pane.js"></script> 
+		<script> 
+			document.observe("dom:loaded", function() {
+				
+				
+				var socket = io.connect();
+				socket.on('connect', function() {
+					var panes = {};
+					socket.emit('connect_listener');
+					
+					socket.on("waiting", function(n) {
+						$("waiting").update(n + " clients waiting.");
+					});
+					
+					socket.on("msg", function(id, msg) {
+						panes[id].add_msg(msg);
+					});
+					
+					socket.on("disconnect_user", function(id) {
+						panes[id].remove();
+						delete panes[id];
+					});
+					
+					$("connect").on("click", function() {
+						socket.emit("connect", function(value) {
+							if (value != null) {	
+								var im = new ImPane($("container"), {
+									msg_callback: function(msg) {
+										socket.emit("msg", value, msg);
+									}
+								});
+								panes[value] = im;
+								
+								// socket.on("msg", function(msg) {
+								// 	im.add_msg(msg);
+								// });
+							}
+						});
+					});
+				});
+			});
+		</script> 
+	</head>
+	<body>
+		<div id="waiting"></div> <a href="#" id="connect">Connect</a>
+		<div id="container"> </div>
+</body>
+</html>
